@@ -3,9 +3,8 @@
     "compilerOptions": {
       "lib": [
         "es2020",
-        "DOM"
       ],
-      "module": "es2020",
+      "module": "es2022",
       "target": "es2020",
       "outDir": "./dist",
       "esModuleInterop": true,
@@ -19,12 +18,12 @@
       "noUnusedParameters": true,
       "noImplicitReturns": true,
       "skipLibCheck": true,
-      "moduleResolution": "Node",
-      "resolveJsonModule": true
+      "moduleResolution": "Node10",
+      "resolveJsonModule": true,
+      "declaration": true,
+      "declarationMap": true
     },
     "include": [
-      ".",
-      "src/",
-      "src/main.ts"
+      "src",
     ]
   }
