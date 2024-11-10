@@ -1,0 +1,99 @@
+name: Deploy to AWS
+run-name: Deployment for Tech Challenge 73 to AWS EKS on branch ${{ github.head_ref }} by @${{ github.actor }}
+on:
+  push:
+    branches:
+      - RELEASE/*
+      - main
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Preparando Ambiente
+        run: |
+          sudo apt update -y
+          sudo apt install nodejs -y
+          sudo npm install
+      - name: Building
+        run: npm run build
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Preparando Ambiente
+        run: |
+          sudo apt update -y
+          sudo apt install nodejs -y
+          sudo npm install
+      - name: testing
+        run: npm run test
+  deploy:
+    needs: [tests, build]
+    runs-on: ubuntu-latest
+    if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/RELEASE/')) && github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+      - name: Get DB Secrets
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: |
+            DB_USER, db_user
+            DB_PASSWORD, db_password
+            DB_HOST, db_host
+            DB_URL, db_url
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Splitting branch name
+        id: docker-tag
+        shell: bash
+        env:
+          BRANCH: ${{ github.ref }}
+        run: |
+          echo BRANCH=$BRANCH
+          if [ "$BRANCH" != "main" ]; then
+            split=(${BRANCH//\// })
+            index=$((${#split[@]}-1))
+            DOCKER_TAG=${split[$index]}
+            echo DOCKER_TAG=$DOCKER_TAG >> $GITHUB_ENV
+          else
+            DOCKER_TAG="latest"
+            echo DOCKER_TAG=$DOCKER_TAG >> $GITHUB_ENV
+          fi
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          file: Dockerfile
+          push: true
+          tags: acdmanderson/tech-challenge-73:${{env.DOCKER_TAG}}
+      - name: Setup Kubectl context
+        run: aws eks update-kubeconfig --name tech-challenge-73 --region us-east-1
+      - name: Creating secrets
+        shell: bash
+        run: |
+          kubectl delete secret tech-challenge-secrets --ignore-not-found=true
+          kubectl create secret generic tech-challenge-secrets \
+          --from-literal=db_username=${{env.DB_USER}} \
+          --from-literal=db_password=${{env.DB_PASSWORD}} \
+          --from-literal=db_url=${{env.DB_URL}} \
+          --from-literal=db_host=${{env.DB_HOST}}
+      - name: Applying k8s changes
+        run: |
+          kubectl delete -f k8s/ --ignore-not-found=true
+          kubectl apply -f k8s/configmap.yaml
+          envsubst < k8s/deployment.yaml | kubectl apply -f -
+          kubectl apply -f k8s/api-svc.yaml

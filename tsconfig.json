@@ -18,11 +18,13 @@
       "alwaysStrict": true,
       "noUnusedParameters": true,
       "noImplicitReturns": true,
-      "skipLibCheck": true
+      "skipLibCheck": true,
+      "moduleResolution": "Node",
+      "resolveJsonModule": true
     },
     "include": [
       ".",
       "src/",
-      "src/index.ts"
+      "src/main.ts"
     ]
   }
