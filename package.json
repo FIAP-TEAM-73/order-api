@@ -10,7 +10,7 @@
     "start": "tsx --env-file=.env src/main.ts",
     "start:prd": "tsx ./dist/src/main.js",
     "test": "jest --silent --noStackTrace --runInBand ./test",
-    "test:verbose": "jest --runInBand ./test",
+    "test:verbose": "jest --coverage=true --runInBand ./test",
     "prepare": "husky install",
     "lint": "eslint --fix ."
   },
