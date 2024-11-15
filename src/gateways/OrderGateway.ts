@@ -9,7 +9,7 @@ interface OrderRow {
   _id: string
   tableNumber: number
   status: OrderStatus
-  cpf: string | null
+  cpf: { value: string } | null
   orderItems: OrderItemRow[]
 }
 
@@ -24,9 +24,9 @@ export class OrderGateway implements IOrderGateway {
   constructor(private readonly connection: IConnection) { }
 
 
-  async save({ id, orderItems, ...order }: Order): Promise<string> {
+  async save({ id, ...order }: Order): Promise<string> {
     const collection = await this.connection.getCollection("order");
-    await collection.updateOne({ _id: id }, { ...order, _id: id }, { upsert: true });
+    await collection.updateOne({ _id: id }, { $set: { ...order, _id: id } }, { upsert: true });
     return id
   }
 
@@ -41,9 +41,9 @@ export class OrderGateway implements IOrderGateway {
     return orders[0]
   }
 
-  private createTypeSafeCpf(cpf: string | null): CPF | undefined {
+  private createTypeSafeCpf(cpf: { value: string } | null): CPF | undefined {
     if (cpf === null) return undefined
-    return new CPF(cpf)
+    return new CPF(cpf.value)
   }
 
   async find({ page, size, ...params }: OrderPageParams): Promise<Order[]> {
@@ -54,25 +54,38 @@ export class OrderGateway implements IOrderGateway {
       if (key === 'id' && params[paramKey]) return { ...acc, _id: params[paramKey] };
       return { ...acc, [`${key}`]: params[paramKey] };
     }, {})
-    const sort = {
-      status: {
-        $cond: [
-          { $eq: ["$status", "READY"] }, 1,
-          { $eq: ["$status", "IN_PROGRESS"] }, 2,
-          { $eq: ["$status", "RECEIVED"] }, 3,
-          4
-        ]
+
+    const pipeline = [
+      {
+        $match: filter
       },
-      createdAt: -1
-    };
+      {
+        $addFields: {
+          sortKey: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$status", "READY"] }, then: 1 },
+                { case: { $eq: ["$status", "IN_PROGRESS"] }, then: 2 },
+                { case: { $eq: ["$status", "RECEIVE"] }, then: 3 }
+              ],
+              default: 4
+            }
+          }
+        }
+      },
+      {
+        $sort: { sortKey: 1, createdAt: -1 }
+      },
+      {
+        $skip: page * size
+      },
+      {
+        $limit: +size
+      }
+    ]
     const collection = await this.connection.getCollection("order");
-    const result = await collection.find(filter)
-      .sort(sort)
-      .skip(page * size)
-      .limit(size)
-      .toArray();
+    const result = await collection.aggregate(pipeline).toArray()
     if (result.length === 0) return []
-    console.log('find', JSON.stringify(result))
     return await Promise.all(result.map(async (row: OrderRow) => {
       const { _id: id, cpf, status, tableNumber, orderItems } = row
       const orderItemsMapped = orderItems.map(({ itemId, orderId, price, quantity }) => (new OrderItem(itemId, orderId, price, quantity)))
