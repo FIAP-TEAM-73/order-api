@@ -10,9 +10,9 @@ import { OrderGateway } from "./gateways/OrderGateway"
 import PaymentIntegrationInMemoryGateway from "./gateways/PaymentIntegrationInMemoryGateway"
 import OrderApi from "./apis/OrderApi"
 
-const uri = `mongodb+srv://tech-challenge-order-api:${process.env.DB_PASSWORD ?? 1234}@cluster0.zwrft.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+const uri = `mongodb+srv://${process.env.DB_USER ?? 'admin'}:${process.env.DB_PASSWORD ?? 1234}@cluster0.zwrft.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
-const connection = new MongoDBConnection(uri, 'tech-challenge-73')
+const connection = new MongoDBConnection(uri, process.env.DB_NAME ?? 'tech-challenge-73')
 
 const orderGateway = new OrderGateway(connection)
 

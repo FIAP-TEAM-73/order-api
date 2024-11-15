@@ -1,10 +1,8 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: db-config
+  name: db-order-api-config
   labels:
-    name: db-config
+    name: db-order-api-config
 data:
-  DB_NAME: database_fastfood
-  DB_PORT: "5432"
-  PGSSLMODE: no-verify
+  DB_NAME: tech-challenge-73
