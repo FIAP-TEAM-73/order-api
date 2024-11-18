@@ -3,7 +3,7 @@ import Order from '../../src/entities/Order'
 import OrderItem from '../../src/entities/OrderItem'
 import OrderPlaced from '../../src/events/OrderPlaced'
 import type IOrderGateway from '../../src/interfaces/IOrderGateway'
-import { type IPaymentIntegrationGateway } from '../../src/interfaces/IPaymentIntegrationGateway'
+import { IPaymentGateway } from '../../src/interfaces/IPaymentGateway'
 
 const orderItems: OrderItem[] = [
   new OrderItem('1', '1', 30, 2),
@@ -22,8 +22,8 @@ describe('Fake checkout handler', () => {
     find: jest.fn(async (_params: any) => await Promise.resolve([])),
     count: jest.fn(async (_params: any) => await Promise.resolve(0))
   }
-  const mockPaymentIntegrationGateway: IPaymentIntegrationGateway = {
-    createPayment: jest.fn().mockReturnValueOnce({ integrationId: 'any_integration_id', qrCode: '00020101021243650016COM' })
+  const mockPaymentIntegrationGateway: IPaymentGateway = {
+    createPayment: jest.fn().mockReturnValueOnce(undefined)
   }
   it('Should skip payment step when order is created', async () => {
     const sut = new FakeCheckoutHandler(mockOrderGateway, mockPaymentIntegrationGateway)

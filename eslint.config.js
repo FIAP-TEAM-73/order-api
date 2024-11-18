@@ -10,6 +10,9 @@ export default [
       "eslint.config.js",
       "**/*.js"
     ],
+    rules: {
+      "max-params": "warn"
+    },
     files: ['**/*.js', '**/*.ts'],
   },
 ]

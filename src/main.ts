@@ -4,11 +4,12 @@ import * as doc from '../docs/swagger.json'
 import MongoDBConnection from "./adapters/MongoDBConnection"
 import FakeCheckoutHandler from "./handlers/FakeCheckoutHandler"
 import IOrderGateway from "./interfaces/IOrderGateway"
-import { IPaymentIntegrationGateway } from "./interfaces/IPaymentIntegrationGateway"
 import EventHandler from "./handlers/EventHandler"
 import { OrderGateway } from "./gateways/OrderGateway"
-import PaymentIntegrationInMemoryGateway from "./gateways/PaymentIntegrationInMemoryGateway"
 import OrderApi from "./apis/OrderApi"
+import { IPaymentGateway } from "./interfaces/IPaymentGateway"
+import AxiosIntegration from "./adapters/AxiosIntegration"
+import PaymentGateway from "./gateways/PaymentGateway"
 
 const uri = `mongodb+srv://${process.env.DB_USER ?? 'admin'}:${process.env.DB_PASSWORD ?? 1234}@cluster0.zwrft.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
@@ -16,14 +17,14 @@ const connection = new MongoDBConnection(uri, process.env.DB_NAME ?? 'tech-chall
 
 const orderGateway = new OrderGateway(connection)
 
-const paymentIntegrationGateway = new PaymentIntegrationInMemoryGateway()
-
-const getHanlders = (orderGateway: IOrderGateway, paymentIntegrationGateway: IPaymentIntegrationGateway): EventHandler => {
-   return new EventHandler([new FakeCheckoutHandler(orderGateway, paymentIntegrationGateway)])
+const getHanlders = (orderGateway: IOrderGateway, paymentGateway: IPaymentGateway): EventHandler => {
+   return new EventHandler([new FakeCheckoutHandler(orderGateway, paymentGateway)])
 }
 
 const initRoutes = (http: IHttp): void => {
-   const handlers = getHanlders(orderGateway, paymentIntegrationGateway)
+   const integration = new AxiosIntegration(process.env.PAYMENT_API_HOST ?? 'http://localhost:9003/api/v1')
+   const paymentGateway = new PaymentGateway(integration)
+   const handlers = getHanlders(orderGateway, paymentGateway)
    new OrderApi(http, orderGateway, handlers).init()
 }
 
