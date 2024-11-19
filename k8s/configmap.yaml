@@ -6,3 +6,4 @@ metadata:
     name: db-order-api-config
 data:
   DB_NAME: tech-challenge-73
+  PAYMENT_API_HOST: http://svc-payment-api/api/v1
