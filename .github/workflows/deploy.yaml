@@ -87,7 +87,7 @@ jobs:
           kubectl delete secret order-api-secrets --ignore-not-found=true
           kubectl create secret generic order-api-secrets \
           --from-literal=db_username=${{env.DB_ORDER_API_USER}} \
-          --from-literal=db_password=${{env.DB_ORDER_API_PASSWOR}} \
+          --from-literal=db_password=${{env.DB_ORDER_API_PASSWORD}} \
       - name: Applying k8s changes
         run: |
           kubectl delete -f k8s/ --ignore-not-found=true
