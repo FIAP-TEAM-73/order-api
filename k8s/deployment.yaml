@@ -57,4 +57,10 @@ spec:
                 configMapKeyRef:
                   name: db-order-api-config
                   key: DB_NAME
+            - name: PAYMENT_API_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: db-order-api-config
+                  key: PAYMENT_API_HOST
+                  
         

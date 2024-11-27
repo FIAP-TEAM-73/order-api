@@ -25,6 +25,7 @@ export default class OrderController {
   }
 
   async findOrder (params: OrderPageParams): Promise<HttpResponse> {
+    console.log('findOrder', {params})
     return await this.findOrderUseCase.execute(params)
   }
 
