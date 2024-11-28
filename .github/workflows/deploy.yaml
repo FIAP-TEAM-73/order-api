@@ -1,5 +1,5 @@
 name: Deploy to AWS
-run-name: Deployment for Tech Challenge 73 to AWS EKS on branch ${{ github.head_ref }} by @${{ github.actor }}
+run-name: Deployment for Order API to AWS EKS on branch ${{ github.head_ref }} by @${{ github.actor }}
 on:
   push:
     branches:
@@ -8,6 +8,18 @@ on:
       - main
   pull_request:
 jobs:
+  sonarcloud:
+    name: SonarQube Cloud
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarQube Cloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   build:
     runs-on: ubuntu-latest
     steps:

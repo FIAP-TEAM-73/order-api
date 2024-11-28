@@ -34,7 +34,7 @@ const main = async (): Promise<void> => {
    await connection.connect()
    const http = getHttp()
    initRoutes(http)
-   await http.doc('/swagger', doc)
+   await http.doc('/swagger/order', doc)
    await http.listen(+(process.env.PORT ?? 9002))
    process.on('SIGINT', async () => {
       await connection.close()
