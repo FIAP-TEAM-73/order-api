@@ -15,8 +15,6 @@ export default class ExpressHttp implements IHttp {
   async route (method: 'post' | 'get' | 'put' | 'delete' | 'patch', url: string, callback: Callback): Promise<unknown> {
     const fullUrl = `/api/v1/${url}`
     console.info(`\x1b[33m [ROUTE] ${method.toUpperCase()} - ${fullUrl} \x1b[0m`)
-    // TODO fix this ESLINT warn
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     return this.app[method](fullUrl, async (req: Request, res: Response) => {
       try {
         const { query, params } = req

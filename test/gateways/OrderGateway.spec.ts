@@ -155,8 +155,7 @@ describe('Order Gateway', () => {
       const filter = {
         page: 1,
         size: 1,
-        status: 'CREATED',
-        id: '1'
+        id: undefined
       }
       const noContentMockConnection = {
         ...mockConnection,
