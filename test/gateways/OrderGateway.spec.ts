@@ -2,7 +2,7 @@ import { OrderGateway } from '../../src/gateways/OrderGateway'
 import type IConnection from '../../src/interfaces/IConnection'
 import Order from '../../src/entities/Order'
 import OrderItem from '../../src/entities/OrderItem'
-import { ObjectId } from 'mongodb'
+import { CPF } from '../../src/entities/value-objects/Cpf'
 
 const orderItems: OrderItem[] = [
   new OrderItem('1', '1', 30, 2),
@@ -11,44 +11,53 @@ const orderItems: OrderItem[] = [
   new OrderItem('4', '1', 25, 1)
 ]
 
-const mockCollectionMethods = {
-  find: (filter: any) => {
-    console.log({ filter })
+const document = {
+  _id: '1',
+  tableNumber: 2,
+  status: 'CREATED',
+  cpf: null,
+  orderItems: [
+    {
+      itemId: '1',
+      orderId: '1',
+      price: 30,
+      quantity: 2
+    },
+    {
+      itemId: '2',
+      orderId: '1',
+      price: 10,
+      quantity: 2
+    },
+    {
+      itemId: '3',
+      orderId: '1',
+      price: 25,
+      quantity: 2
+    },
+    {
+      itemId: '4',
+      orderId: '1',
+      price: 25,
+      quantity: 1
+    },
+  ]
+}
 
+const find = (filter: any) => {
+  console.log({ filter })
+  return {
+    toArray: () => Promise.resolve([document])
+  }
+}
+
+const mockCollectionMethods = {
+  find,
+  aggregate: (filter: any) => {
+    const documentWithCpf = { ...document, cpf: { value: '12556787811' } }
+    console.log({ filter })
     return {
-      toArray: () => Promise.resolve([{
-        _id: '1',
-        tableNumber: 2,
-        status: 'CREATED',
-        cpf: null,
-        orderItems: [
-          {
-            itemId: '1',
-            orderId: '1',
-            price: 30,
-            quantity: 2
-          },
-          {
-            itemId: '2',
-            orderId: '1',
-            price: 10,
-            quantity: 2
-          },
-          {
-            itemId: '3',
-            orderId: '1',
-            price: 25,
-            quantity: 2
-          },
-          {
-            itemId: '4',
-            orderId: '1',
-            price: 25,
-            quantity: 1
-          },
-        ]
-      },
-      ])
+      toArray: () => Promise.resolve([documentWithCpf])
     }
   },
   insertOne: (doc: any) => {
@@ -125,6 +134,60 @@ describe('Order Gateway', () => {
       const sut = new OrderGateway(mockConnectionEmpty)
       const result = await sut.findById(wrongId)
       expect(result).toBeUndefined()
+    })
+  })
+  describe('Find Order', () => {
+    it('Should return a list of orders when the filter matchs', async () => {
+      const order = new Order('1', 2, 'CREATED', orderItems, new CPF('12556787811'))
+      const filter = {
+        page: 1,
+        size: 1,
+        status: 'CREATED',
+        id: '1'
+      }
+      const sut = new OrderGateway(mockConnection)
+      const result = await sut.find(filter)
+      expect(result).toHaveLength(1)
+      expect(result).toEqual([order])
+    })
+    it('Should return an empty list of orders when the filter is wrong', async () => {
+      const order = new Order('1', 2, 'CREATED', orderItems, new CPF('12556787811'))
+      const filter = {
+        page: 1,
+        size: 1,
+        status: 'CREATED',
+        id: '1'
+      }
+      const noContentMockConnection = {
+        ...mockConnection,
+        getCollection: jest.fn(async (collection: string) => {
+          console.log({ collection })
+          return { 
+            ...mockCollectionMethods,
+            aggregate: (filter: any) => {
+              console.log({ filter })
+              return {
+                toArray: () => Promise.resolve([])
+              }
+            },
+           }
+        })
+      }
+      const sut = new OrderGateway(noContentMockConnection)
+      const result = await sut.find(filter)
+      expect(result).toHaveLength(0)
+      expect(result).toEqual([])
+    })
+  })
+  describe('Count orders', () => {
+    it('Should count the quantity of orders when the filter is right', async () => {
+      const filter = {
+        id: '1',
+        status: 'CREATED' 
+      }
+      const sut = new OrderGateway(mockConnection)
+      const result = await sut.count(filter)
+      expect(result).toBe(1)
     })
   })
 })
