@@ -1,0 +1,394 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Order API",
+        "description": "API de pedidos",
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/license/MIT"
+        }
+    },
+    "basePath": "/api/v1/",
+    "tags": [
+        {
+            "name": "Pedidos",
+            "description": "API responsável por gerenciar pedidos"
+        }
+    ],
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "paths": {
+        "/order": {
+            "post": {
+                "tags": [
+                    "Pedidos"
+                ],
+                "summary": "Place Order",
+                "operationId": "placeOrder",
+                "parameters": [
+                    {
+                        "name": "placeOrder",
+                        "in": "body",
+                        "description": "Order object that needs to be added",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "tableNumber": {
+                                    "type": "integer",
+                                    "example": 11
+                                },
+                                "orderItems": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "idItem": {
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "example": "bf32fb00-7bb2-481d-86ca-336dc5af1d4e"
+                                            },
+                                            "price": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 30.99
+                                            },
+                                            "quantity": {
+                                                "type": "integer",
+                                                "example": 2
+                                            }
+                                        },
+                                        "required": [
+                                            "idItem",
+                                            "price",
+                                            "quantity"
+                                        ]
+                                    }
+                                },
+                                "cpf": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "example": null
+                                }
+                            },
+                            "required": [
+                                "tableNumber",
+                                "orderItems"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Order placed successfully",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "orderId": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "example": "d2f613ce-bee5-48c5-b8c9-e229fa3ea981"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "friendlyMessage": {
+                                    "type": "string",
+                                    "example": "Fail while trying to access POST - /order"
+                                },
+                                "errorMessage": {
+                                    "type": "string",
+                                    "example": "Quantity must be greater than 1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "friendlyMessage": {
+                                    "type": "string",
+                                    "example": "Fail while trying to access POST - /order"
+                                },
+                                "errorMessage": {
+                                    "type": "string",
+                                    "example": "Unkown error!"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Pedidos"
+                ],
+                "summary": "Find Order",
+                "operationId": "findStatus",
+                "parameters": [
+                    {
+                        "name": "cpf",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "example": "35999332211"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "example": "PAYMENT_ACCEPTED"
+                        }
+                    },
+                    {
+                        "name": "tableNumber",
+                        "in": "query",
+                        "schema": {
+                            "type": "number",
+                            "example": 22
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "e5c79516-aec7-468d-a802-a8cee929ad9f"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status found",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "example": "e5c79516-aec7-468d-a802-a8cee929ad9f"
+                                            },
+                                            "tableNumber": {
+                                                "type": "integer",
+                                                "example": 10
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "CANCELED"
+                                            },
+                                            "orderItems": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "itemId": {
+                                                            "type": "string",
+                                                            "format": "uuid",
+                                                            "example": "bf32fb00-7bb2-481d-86ca-336dc5af1d4e"
+                                                        },
+                                                        "orderId": {
+                                                            "type": "string",
+                                                            "format": "uuid",
+                                                            "example": "e5c79516-aec7-468d-a802-a8cee929ad9f"
+                                                        },
+                                                        "price": {
+                                                            "type": "string",
+                                                            "example": "30.99"
+                                                        },
+                                                        "quantity": {
+                                                            "type": "string",
+                                                            "example": "1"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "cpf": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string",
+                                                        "example": "35999332211"
+                                                    }
+                                                }
+                                            },
+                                            "total": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 66.95
+                                            }
+                                        }
+                                    }
+                                },
+                                "pageSize": {
+                                    "type": "string",
+                                    "example": "10"
+                                },
+                                "page": {
+                                    "type": "string",
+                                    "example": "1"
+                                },
+                                "totalPages": {
+                                    "type": "integer",
+                                    "example": 1
+                                },
+                                "isFirstPage": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "isLastPage": {
+                                    "type": "boolean",
+                                    "example": false
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "friendlyMessage": {
+                                    "type": "string",
+                                    "example": "Fail while trying to access GET - /order"
+                                },
+                                "errorMessage": {
+                                    "type": "string",
+                                    "example": "Quantity must be greater than 1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "friendlyMessage": {
+                                    "type": "string",
+                                    "example": "Fail while trying to access GET - /order"
+                                },
+                                "errorMessage": {
+                                    "type": "string",
+                                    "example": "Unkown error!"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/order/{orderId}": {
+            "put": {
+                "tags": [
+                    "Pedidos"
+                ],
+                "summary": "Change Order Status",
+                "operationId": "changeOrderstatus",
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "e5c79516-aec7-468d-a802-a8cee929ad9f"
+                        }
+                    },
+                    {
+                        "name": "changeOrderStatus",
+                        "in": "body",
+                        "description": "Order status update",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "example": "CANCELED"
+                                }
+                            },
+                            "required": [
+                                "status"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Order status updated successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "friendlyMessage": {
+                                    "type": "string",
+                                    "example": "Fail while trying to access PUT - /order/{orderId}"
+                                },
+                                "errorMessage": {
+                                    "type": "string",
+                                    "example": "Quantity must be greater than 1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "friendlyMessage": {
+                                    "type": "string",
+                                    "example": "Fail while trying to access PUT - /order/{orderId}"
+                                },
+                                "errorMessage": {
+                                    "type": "string",
+                                    "example": "Unkown error!"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
