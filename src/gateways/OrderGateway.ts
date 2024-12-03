@@ -66,7 +66,7 @@ export class OrderGateway implements IOrderGateway {
               branches: [
                 { case: { $eq: ["$status", "READY"] }, then: 1 },
                 { case: { $eq: ["$status", "IN_PROGRESS"] }, then: 2 },
-                { case: { $eq: ["$status", "RECEIVE"] }, then: 3 }
+                { case: { $eq: ["$status", "RECEIVED"] }, then: 3 }
               ],
               default: 4
             }
